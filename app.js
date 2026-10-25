@@ -18,7 +18,7 @@ const QUESTIONS = [
 ];
 // Pinakamataas na premyo kada tanong: 1000, 900, 800 ... 10 para sa ika-100? 
 // Ang prize board ay hindi ipinapakita sa players. Palitan ang BASE_PRIZE / PRIZE_STEP kung kailangan.
-const BASE_PRIZE = 1000, PRIZE_STEP = 100, MAX_PLAYERS = 50, QUESTION_SECONDS = 3, BOARD_SECONDS = 1000;
+const BASE_PRIZE = 1000, PRIZE_STEP = 100, MAX_PLAYERS = 50, QUESTION_SECONDS = 5, BOARD_SECONDS = 1000;
 let app, auth, db, uid, playerName="", roomCode="", isHost=false, roomData=null;
 let unsubRoom=null, unsubPlayers=null, unsubAnswers=null, clockInterval=null, hostAdvanceTimeout=null, localDeadline=0, selected=false, answerLocked=false, currentQuestion=-1, localAnswerListener=null;
 
@@ -133,7 +133,7 @@ async function submitAnswer(choice){
 }
 function scheduleAdvance(index){
  if(hostAdvanceTimeout)return;
- // Allow the entire 3-second answer window, then show top 3 for exactly about 1 second.
+ // Allow the entire 5-second answer window, then show top 3 for exactly about 1 second.
  const delay=Math.max(0,localDeadline-Date.now())+100;
  hostAdvanceTimeout=setTimeout(()=>closeQuestion(index),delay);
 }
