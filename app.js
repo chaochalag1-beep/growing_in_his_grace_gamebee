@@ -45,6 +45,7 @@ function startBackgroundMusic() {
 
 document.addEventListener("click", startBackgroundMusic);
 
+
 const QUESTIONS = [
  {q:"Ayon sa Lucas 2:52, paano lumago si Jesus?",a:["Sa kayamanan lamang","Sa karunungan, pangangatawan, at biyaya ng Diyos at ng tao","Sa kapangyarihan lamang"],c:1},
  {q:"Ano ang ibig sabihin ng “Trust God”?",a:["Magtiwala sa Diyos","Magtiwala sa sarili lamang","Matakot sa Diyos"],c:0},
@@ -55,18 +56,26 @@ const QUESTIONS = [
  {q:"Bakit mahalagang lumapit tayo kay Jesus?",a:["Upang matuto sa Kanyang mga aral","Upang maging mayaman","Upang maging sikat"],c:0},
  {q:"Ano ang ibig sabihin ng “Be Humble”?",a:["Magmayabang","Magpakumbaba","Magmataas sa kapwa"],c:1},
  {q:"Paano natin maipapakita ang pagpapakumbaba?",a:["Sa pagmamataas","Sa pagsisi sa iba","Sa pakikinig, paggalang, at paghingi ng tawad"],c:2},
- {q:"Ano ang tatlong pangunahing aral ng “Growing in His Grace”?",a:["Trust God, Grow in God, at Be Humble","Be Rich, Be Famous, at Be Powerful","Be First, Be Strong, at Be Popular"],c:0}
+ {q:"Ano ang tatlong pangunahing aral ng “Growing in His Grace”?",a:["Trust God, Grow in God, at Be Humble","Be Rich, Be Famous, at Be Powerful","Be First, Be Strong, at Be Popular"],c:0},
+
+{q:"2026 THEME: Para kay Cristo, Ipangaral ang ______________, Mangaral upang lumago, Maglingkod nang may Puso, Mamuhay ng wasto.",a:["Ebanghelyo","Salita ng Diyos","Mabuting Balita"],c:0,bonus:50},
+{q:"ANNIVERSARY THEME: Tatlong ____________ ng biyaya, Patuloy na lalago, Patuloy na hahayo.",a:["Taon","Dekada","Siglo"],c:1,bonus:50},
+{q:"Sa anong week ng November 2026 ang Grand Anniversary ng Light of the World–Purok 5?",a:["2nd Sunday","3rd Sunday","4th Sunday"],c:2,bonus:200}
 ];
 
-const BASE_PRIZE = 1000;
+
+const BASE_PRIZE = 1000000;
 const PRIZE_STEP = 100;
 const MAX_PLAYERS = 50;
-const QUESTION_SECONDS = 4;
+const QUESTION_SECONDS = 6;
+const BONUS_TITLE_SECONDS = 5;
 const BOARD_SECONDS = 1000;
 
 let app, auth, db, uid, playerName = "", roomCode = "", isHost = false, roomData = null;
 let unsubRoom = null, unsubPlayers = null, unsubAnswers = null;
 let clockInterval = null, hostAdvanceTimeout = null;
+let bonusTitleTimeout = null;
+let bonusTitleKey = "";
 let localDeadline = 0, selected = false, answerLocked = false;
 let currentQuestion = -1, localAnswerListener = null;
 
@@ -155,6 +164,9 @@ function detachListeners() {
 
 function leaveLocal() {
   stopLocalTimers();
+  if (bonusTitleTimeout) clearTimeout(bonusTitleTimeout);
+bonusTitleTimeout = null;
+bonusTitleKey = "";
   detachListeners();
 
   if (localAnswerListener) localAnswerListener();
@@ -313,22 +325,81 @@ function enterRoom() {
   unsubPlayers = onValue(playersRef(), snap => renderPlayers(snap.val() || {}));
 }
 
+
 function syncRoomUI() {
   if (!roomData) return;
 
-  if (roomData.status === "playing" && $("screen-lobby").classList.contains("active")) {
+  if (roomData.status === "playing" &&
+      $("screen-lobby").classList.contains("active")) {
     showScreen("game");
   }
+  
+if (roomData.status === "playing" &&
+    roomData.phase === "bonusTitle") {
+  showScreen("bonus-title");
 
-  if (roomData.status === "playing" && roomData.phase === "leaderboard") {
-    const result = (roomData.roundResults || {})[roomData.questionIndex];
-    if (result) showRoundBoardFromResult(roomData.questionIndex, result);
+  const q = QUESTIONS[roomData.questionIndex];
+
+  if (q) {
+    $("bonusTitleText").textContent =
+      q.bonus === 200 ? "SUPER BONUS ROUND" :
+      roomData.questionIndex === 10 ? "BONUS ROUND 1" :
+      "BONUS ROUND 2";
+
+    $("bonusTitlePrize").textContent =
+      "Premyo: ₱" + q.bonus;
+
+    const titleKey =
+      roomCode + "-" + roomData.questionIndex;
+
+    if (isHost && bonusTitleKey !== titleKey) {
+      bonusTitleKey = titleKey;
+
+      if (bonusTitleTimeout) {
+        clearTimeout(bonusTitleTimeout);
+      }
+
+      bonusTitleTimeout = setTimeout(async () => {
+        bonusTitleTimeout = null;
+
+        if (!roomData ||
+            roomData.phase !== "bonusTitle" ||
+            roomData.questionIndex !==
+              Number(titleKey.split("-").pop())) {
+          return;
+        }
+
+        try {
+          await update(roomRef(), {
+            phase: "question",
+            questionStartedAt: Date.now()
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }, BONUS_TITLE_SECONDS * 1000);
+    }
+  }
+  } else if (roomData.status === "playing" &&
+             roomData.phase === "leaderboard") {
+    const result =
+      (roomData.roundResults || {})[roomData.questionIndex];
+
+    if (result) {
+      showRoundBoardFromResult(roomData.questionIndex, result);
+    }
   } else if (roomData.status === "playing") {
-    renderQuestion(roomData.questionIndex, roomData.questionStartedAt);
+    renderQuestion(
+      roomData.questionIndex,
+      roomData.questionStartedAt
+    );
   }
 
-  if (roomData.status === "finished") showFinal(roomData.players || {});
+  if (roomData.status === "finished") {
+    showFinal(roomData.players || {});
+  }
 }
+
 
 function renderPlayers(players) {
   const entries = Object.entries(players || {});
@@ -521,12 +592,15 @@ function scheduleAdvance(index) {
   hostAdvanceTimeout = setTimeout(() => closeQuestion(index), delay);
 }
 
+
 async function closeQuestion(index) {
   hostAdvanceTimeout = null;
 
   if (!isHost || !roomCode || currentQuestion !== index) return;
 
   try {
+    const q = QUESTIONS[index];
+
     const snap = await get(ref(db, `rooms/${roomCode}/answers/${index}`));
     const answers = snap.val() || {};
 
@@ -534,18 +608,27 @@ async function closeQuestion(index) {
       .filter(([id, a]) => a.correct)
       .sort((a, b) => (a[1].answeredAt || 0) - (b[1].answeredAt || 0));
 
-    const prizeMap = {};
-    correct.forEach(([id, a], rank) => {
-      prizeMap[id] = prizeForRank(rank);
-    });
-
     const psnap = await get(playersRef());
     const players = psnap.val() || {};
     const updates = {};
+    const prizeMap = {};
+
+    if (q.bonus) {
+      // Bonus: unang tamang sagot lamang ang makakakuha ng bonus.
+      if (correct.length > 0) {
+        prizeMap[correct[0][0]] = q.bonus;
+      }
+    } else {
+      // Regular question: panatilihin ang kasalukuyang scoring.
+      correct.forEach(([id], rank) => {
+        prizeMap[id] = prizeForRank(rank);
+      });
+    }
 
     for (const [id, p] of Object.entries(players)) {
-      if (prizeMap[id]) {
-        updates[`players/${id}/total`] = (p.total || 0) + prizeMap[id];
+      if (prizeMap[id] !== undefined && prizeMap[id] > 0) {
+        updates[`players/${id}/total`] =
+          (p.total || 0) + prizeMap[id];
       }
     }
 
@@ -553,7 +636,9 @@ async function closeQuestion(index) {
       correct: correct.map(([id, a], rank) => ({
         uid: id,
         name: a.playerName || players[id]?.name || "Player",
-        prize: prizeForRank(rank),
+        prize: q.bonus
+          ? (rank === 0 ? q.bonus : 0)
+          : prizeForRank(rank),
         answeredAt: a.answeredAt || 0
       })),
       closedAt: Date.now()
@@ -564,12 +649,16 @@ async function closeQuestion(index) {
 
     await new Promise(resolve => setTimeout(resolve, BOARD_SECONDS));
 
-    if (index + 1 < QUESTIONS.length) {
-      await update(roomRef(), {
-        phase: "question",
-        questionIndex: index + 1,
-        questionStartedAt: Date.now()
-      });
+    
+if (index + 1 < QUESTIONS.length) {
+  const nextIndex = index + 1;
+  const nextQ = QUESTIONS[nextIndex];
+
+  await update(roomRef(), {
+    phase: nextQ.bonus ? "bonusTitle" : "question",
+    questionIndex: nextIndex,
+    questionStartedAt: Date.now()
+  });
     } else {
       await update(roomRef(), {
         status: "finished",
@@ -583,21 +672,41 @@ async function closeQuestion(index) {
   }
 }
 
-function showRoundBoardFromResult(index, result) {
-  const top = (result.correct || []).slice(0, 3);
 
-  $("leaderboardQuestion").textContent = `Tanong ${index + 1} ng ${QUESTIONS.length}`;
+function showRoundBoardFromResult(index, result) {
+  const q = QUESTIONS[index];
+  const top = (result.correct || []).slice(0, 10);
+
+  $("leaderboardQuestion").textContent = q.bonus
+    ? (q.bonus === 200
+        ? "🏆 SUPER BONUS ROUND"
+        : `⭐ BONUS ROUND ${index - 9}`)
+    : `Tanong ${index + 1} ng ${QUESTIONS.length}`;
 
   $("topThree").innerHTML = top.length
     ? top.map((p, i) =>
-      `<div class="rank-row"><div class="rank-number">${["🥇", "🥈", "🥉"][i]}</div><div><div class="rank-name">${escapeHtml(p.name || "Player")}</div><div class="rank-sub">Tamang sagot · #${i + 1} sa bilis</div></div><div class="rank-prize">₱${fmt(p.prize)}</div></div>`
+      `<div class="rank-row">
+        <div class="rank-number">${["🥇", "🥈", "🥉"][i] || `#${i + 1}`}</div>
+        <div>
+          <div class="rank-name">${escapeHtml(p.name || "Player")}</div>
+          <div class="rank-sub">${
+            q.bonus
+              ? (p.prize > 0 ? "BONUS WINNER!" : "Tamang sagot")
+              : `Tamang sagot · #${i + 1} sa bilis`
+          }</div>
+        </div>
+        <div class="rank-prize">${p.prize > 0 ? "+" : ""}₱${fmt(p.prize)}</div>
+      </div>`
     ).join("")
     : `<p class="muted">Walang tamang sagot sa tanong na ito.</p>`;
 
   showScreen("leaderboard");
 }
 
+
 function showFinal(players) {
+    gameSounds.background.pause();
+  gameSounds.background.currentTime = 0;
   stopLocalTimers();
   $("timerCircle").classList.add("hidden");
 
@@ -608,7 +717,11 @@ function showFinal(players) {
     victoryPlayedForRoom = roomCode;
     playGameSound("victory");
   }
+  showScreen("thank-you");
 
+  setTimeout(() => {
+    showScreen("results");
+  }, 5000);
   const ranking = Object.entries(players).sort((a, b) =>
     (b[1].total || 0) - (a[1].total || 0) ||
     ((a[1].joinedAt || 0) - (b[1].joinedAt || 0))
@@ -618,7 +731,6 @@ function showFinal(players) {
     `<div class="rank-row"><div class="rank-number">${i < 3 ? ["🥇", "🥈", "🥉"][i] : `#${i + 1}`}</div><div><div class="rank-name">${escapeHtml(p.name || "Player")}${id === uid ? " (Ikaw)" : ""}</div><div class="rank-sub">Kabuuang premyo</div></div><div class="rank-prize">₱${fmt(p.total || 0)}</div></div>`
   ).join("");
 
-  showScreen("results");
 }
 
 $("backHomeBtn").addEventListener("click", () => {
