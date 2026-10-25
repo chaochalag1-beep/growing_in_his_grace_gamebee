@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="tl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#123b2c">
+<title>Growing in His Grace — Bible Quiz Millionaire</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand-mark">✦</div>
+    <div><div class="brand-title">GROWING IN HIS GRACE</div><div class="brand-sub">BIBLE QUIZ MILLIONAIRE</div></div>
+    <div id="timerCircle" class="timer hidden" aria-label="Natitirang oras">3</div>
+  </header>
+
+  <main>
+    <section id="screen-home" class="screen active">
+      <div class="hero">
+        <div class="hero-ornament">✧ ✦ ✧</div>
+        <p class="eyebrow">LUCAS 2:52 · MARCOS 10:14</p>
+        <h1>Grow in His Grace</h1>
+        <p class="hero-copy">Lumago sa karunungan, pananampalataya, at biyaya ng Diyos.</p>
+        <div class="verse-card"><span>“Hayaan ninyong lumapit sa akin ang mga bata.”</span><small>Marcos 10:14</small></div>
+      </div>
+      <div class="panel">
+        <label for="playerName">Pangalan ng manlalaro</label>
+        <input id="playerName" maxlength="24" placeholder="Ilagay ang pangalan" autocomplete="nickname">
+        <button id="createRoomBtn" class="btn btn-gold">Gumawa ng Room</button>
+        <div class="or-divider"><span>o sumali sa room</span></div>
+        <label for="roomCodeInput">Room Code</label>
+        <input id="roomCodeInput" maxlength="6" placeholder="HAL. ABC123" autocapitalize="characters">
+        <button id="joinRoomBtn" class="btn btn-light">Sumali sa Room</button>
+        <p id="homeError" class="error" role="alert"></p>
+      </div>
+      <p class="small-note">Online multiplayer · hanggang 50 players · 10 tanong</p>
+    </section>
+
+    <section id="screen-lobby" class="screen">
+      <div class="panel lobby-panel">
+        <p class="eyebrow">MULTIPLAYER ROOM</p><h2>Handa na ba kayo?</h2>
+        <div class="room-code-card"><span>ROOM CODE</span><strong id="roomCodeDisplay">------</strong><button id="copyCodeBtn" class="copy-btn">Kopyahin</button></div>
+        <div class="lobby-stats"><div><strong id="playerCount">0</strong><span>Players</span></div><div><strong>50</strong><span>Max players</span></div><div><strong>3s</strong><span>Bawat tanong</span></div></div>
+        <h3>Mga manlalaro</h3><div id="playerList" class="player-list"></div>
+        <p id="lobbyMessage" class="muted">Hintayin ang host na simulan ang laro.</p>
+        <button id="startGameBtn" class="btn btn-gold hidden">Simulan ang Laro</button>
+        <button id="leaveRoomBtn" class="btn btn-outline">Bumalik</button>
+        <p id="lobbyError" class="error" role="alert"></p>
+      </div>
+    </section>
+
+    <section id="screen-game" class="screen">
+      <div class="game-meta"><span id="questionCounter">TANONG 1 / 10</span><span id="roomBadge">ROOM ------</span></div>
+      <div class="progress-track"><div id="progressBar"></div></div>
+      <div class="question-card">
+        <div class="question-icon">✦</div><p class="eyebrow">PILIIN ANG TAMANG SAGOT</p>
+        <h2 id="questionText">Loading...</h2>
+      </div>
+      <div id="answerOptions" class="answer-options"></div>
+      <div id="answerFeedback" class="answer-feedback" aria-live="polite"></div>
+      <div class="game-foot"><span>⚡ Mabilis at tamang sagot = mas mataas na puntos</span><span id="answeredCount">0 sumagot</span></div>
+    </section>
+
+    <section id="screen-leaderboard" class="screen">
+      <div class="leaderboard-panel">
+        <div class="trophy">🏆</div><p class="eyebrow">PAGKATAPOS NG TANONG</p>
+        <h2>Top 3 Tamang Sagot</h2>
+        <p id="leaderboardQuestion" class="muted">Tanong 1</p>
+        <div id="topThree" class="top-three"></div>
+        <p class="leaderboard-note">Susunod na tanong sa ilang sandali…</p>
+      </div>
+    </section>
+
+    <section id="screen-results" class="screen">
+      <div class="leaderboard-panel final-panel">
+        <div class="trophy">👑</div><p class="eyebrow">GROWING IN HIS GRACE</p>
+        <h1>Laro ay Tapos Na!</h1><p class="muted">Pinal na ranggo at kabuuang premyo</p>
+        <div id="finalRanking" class="final-ranking"></div>
+        <button id="backHomeBtn" class="btn btn-gold">Bumalik sa Home</button>
+      </div>
+    </section>
+  </main>
+  <footer>“Grow in God. Trust God. Be Humble.”</footer>
+</div>
+<div id="toast" class="toast" role="status"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
