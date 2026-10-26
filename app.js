@@ -58,9 +58,9 @@ const QUESTIONS = [
  {q:"Paano natin maipapakita ang pagpapakumbaba?",a:["Sa pagmamataas","Sa pagsisi sa iba","Sa pakikinig, paggalang, at paghingi ng tawad"],c:2},
  {q:"Ano ang tatlong pangunahing aral ng “Growing in His Grace”?",a:["Trust God, Grow in God, at Be Humble","Be Rich, Be Famous, at Be Powerful","Be First, Be Strong, at Be Popular"],c:0},
 
-{q:"2026 THEME: Para kay Cristo, Ipangaral ang ______________, Mangaral upang lumago, Maglingkod nang may Puso, Mamuhay ng wasto.",a:["Ebanghelyo","Salita ng Diyos","Mabuting Balita"],c:0,bonus:50},
-{q:"ANNIVERSARY THEME: Tatlong ____________ ng biyaya, Patuloy na lalago, Patuloy na hahayo.",a:["Taon","Dekada","Siglo"],c:1,bonus:50},
-{q:"Sa anong week ng November 2026 ang Grand Anniversary ng Light of the World–Purok 5?",a:["2nd Sunday","3rd Sunday","4th Sunday"],c:2,bonus:200}
+{q:"2026 THEME: Para kay Cristo, Ipangaral ang ______________, Mangaral upang lumago, Maglingkod nang may Puso, Mamuhay ng wasto.",a:["Ebanghelyo","Salita ng Diyos","Mabuting Balita"],c:0,bonus:50000},
+{q:"ANNIVERSARY THEME: Tatlong ____________ ng biyaya, Patuloy na lalago, Patuloy na hahayo.",a:["Taon","Dekada","Siglo"],c:1,bonus:50000},
+{q:"Sa anong week ng November 2026 ang Grand Anniversary ng Light of the World–Purok 5?",a:["2nd Sunday","3rd Sunday","4th Sunday"],c:2,bonus:100000}
 ];
 
 
@@ -342,7 +342,7 @@ if (roomData.status === "playing" &&
 
   if (q) {
     $("bonusTitleText").textContent =
-      q.bonus === 200 ? "SUPER BONUS ROUND" :
+      q.bonus === 100000 ? "SUPER BONUS ROUND" :
       roomData.questionIndex === 10 ? "BONUS ROUND 1" :
       "BONUS ROUND 2";
 
@@ -678,7 +678,7 @@ function showRoundBoardFromResult(index, result) {
   const top = (result.correct || []).slice(0, 10);
 
   $("leaderboardQuestion").textContent = q.bonus
-    ? (q.bonus === 200
+    ? (q.bonus === 100000
         ? "🏆 SUPER BONUS ROUND"
         : `⭐ BONUS ROUND ${index - 9}`)
     : `Tanong ${index + 1} ng ${QUESTIONS.length}`;
