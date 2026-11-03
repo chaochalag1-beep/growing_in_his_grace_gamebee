@@ -27,7 +27,15 @@
       <div class="panel">
         <label for="playerName">Pangalan ng manlalaro</label>
         <input id="playerName" maxlength="24" placeholder="Ilagay ang pangalan" autocomplete="nickname">
-        <button id="createRoomBtn" class="btn btn-gold">Gumawa ng Room</button>
+        <div id="hostAccess">
+  <button id="hostLoginBtn" class="btn btn-outline">
+    HOST LOGIN
+  </button>
+</div>
+
+<button id="createRoomBtn" class="btn btn-gold hidden">
+  Gumawa ng Room
+</button>
         <div class="or-divider"><span>o sumali sa room</span></div>
         <label for="roomCodeInput">Room Code</label>
         <input id="roomCodeInput" maxlength="6" placeholder="HAL. ABC123" autocapitalize="characters">
