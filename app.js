@@ -244,6 +244,7 @@ async function createRoom() {
 }
 
 async function joinRoom() {
+  startBackgroundMusic();
   if (!db) {
     err("homeError", "Hindi pa nakakonekta sa Firebase.");
     return;
