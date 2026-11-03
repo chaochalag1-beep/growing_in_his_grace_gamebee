@@ -6,12 +6,13 @@ import { firebaseConfig } from "./firebase-config.js";
 
 const $ = id => document.getElementById(id);
 
+
 // SOUNDS
 const gameSounds = {
-  correct: new Audio("./sounds/correct.mp3"),
-  wrong: new Audio("./sounds/wrong.mp3"),
-  background: new Audio("./sounds/background.mp3"),
-  victory: new Audio("./sounds/victory.mp3")
+  correct: new Audio("./correct.mp3"),
+  wrong: new Audio("./wrong.mp3"),
+  background: new Audio("./background.mp3"),
+  victory: new Audio("./victory.mp3")
 };
 
 gameSounds.background.loop = true;
@@ -23,41 +24,41 @@ gameSounds.victory.volume = 0.9;
 let backgroundStarted = false;
 let victoryPlayedForRoom = "";
 
+Object.values(gameSounds).forEach(sound => {
+  sound.preload = "auto";
+});
+
 function playGameSound(name) {
   const sound = gameSounds[name];
   if (!sound) return;
 
   sound.currentTime = 0;
+
   sound.play().catch(error => {
-    console.log("Hindi ma-play ang sound:", name, error);
+    console.log("Sound error:", name, error);
   });
 }
 
-function startBackgroundMusic() {
-  if (backgroundStarted) return;
-  backgroundStarted = true;
+async function startBackgroundMusic() {
+  if (!gameSounds.background.paused) return;
 
-  gameSounds.background.play().catch(error => {
+  try {
+    await gameSounds.background.play();
+    backgroundStarted = true;
+    console.log("Background music playing!");
+  } catch (error) {
     backgroundStarted = false;
-    console.log("Hindi ma-play ang background music:", error);
-  });
+    console.log("Background music blocked:", error);
+  }
 }
 
-document.addEventListener("click", () => {
-  startBackgroundMusic();
+// Start music on the player's first touch or click
+document.addEventListener(
+  "pointerdown",
+  startBackgroundMusic,
+  { once: true }
+);
 
-  Object.values(gameSounds).forEach(sound => {
-    sound.muted = true;
-
-    sound.play().then(() => {
-      sound.pause();
-      sound.currentTime = 0;
-      sound.muted = false;
-    }).catch(() => {
-      sound.muted = false;
-    });
-  });
-}, { once: true });
 
 
 const QUESTIONS = [
@@ -197,6 +198,7 @@ bonusTitleKey = "";
 }
 
 async function createRoom() {
+  startBackgroundMusic();
   if (!db) {
     err("homeError", "Hindi pa nakakonekta sa Firebase.");
     return;
