@@ -56,7 +56,7 @@ const QUESTIONS = [
  {q:"Bakit mahalagang lumapit tayo kay Jesus?",a:["Upang matuto sa Kanyang mga aral","Upang maging mayaman","Upang maging sikat"],c:0},
  {q:"Ano ang ibig sabihin ng “Be Humble”?",a:["Magmayabang","Magpakumbaba","Magmataas sa kapwa"],c:1},
  {q:"Paano natin maipapakita ang pagpapakumbaba?",a:["Sa pagmamataas","Sa pagsisi sa iba","Sa pakikinig, paggalang, at paghingi ng tawad"],c:2},
- {q:"Ano ang tatlong pangunahing aral ng “Growing in His Grace”?",a:["Trust God, Grow in God, at Be Humble","Be Rich, Be Famous, at Be Powerful","Be First, Be Strong, at Be Popular"],c:0},
+ {q:"Ano ang hindi halimbawa ng “Paglago tulad ng Panginoong JESUS”?",a:["Lack of wisdom, at Physical Decline","Spiritual Growth, at Social growth","Growth in wisdom, at Physical growth"],c:0},
 
 {q:"2026 THEME: Para kay Cristo, Ipangaral ang ______________, Mangaral upang lumago, Maglingkod nang may Puso, Mamuhay ng wasto.",a:["Ebanghelyo","Salita ng Diyos","Mabuting Balita"],c:0,bonus:50000},
 {q:"ANNIVERSARY THEME: Tatlong ____________ ng biyaya, Patuloy na lalago, Patuloy na hahayo.",a:["Taon","Dekada","Siglo"],c:1,bonus:50000},
@@ -741,6 +741,20 @@ $("backHomeBtn").addEventListener("click", () => {
 window.addEventListener("beforeunload", () => {
   stopLocalTimers();
   detachListeners();
+});
+
+// HOST LOGIN WITH PIN
+$("hostLoginBtn").addEventListener("click", () => {
+  const pin = prompt("Ilagay ang HOST PIN:");
+
+  if (pin === "0423") {
+    $("createRoomBtn").classList.remove("hidden");
+    $("hostAccess").classList.add("hidden");
+
+    alert("HOST ACCESS GRANTED!");
+  } else if (pin !== null) {
+    alert("Maling HOST PIN!");
+  }
 });
 
 init();
