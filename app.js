@@ -43,7 +43,21 @@ function startBackgroundMusic() {
   });
 }
 
-document.addEventListener("click", startBackgroundMusic);
+document.addEventListener("click", () => {
+  startBackgroundMusic();
+
+  Object.values(gameSounds).forEach(sound => {
+    sound.muted = true;
+
+    sound.play().then(() => {
+      sound.pause();
+      sound.currentTime = 0;
+      sound.muted = false;
+    }).catch(() => {
+      sound.muted = false;
+    });
+  });
+}, { once: true });
 
 
 const QUESTIONS = [
