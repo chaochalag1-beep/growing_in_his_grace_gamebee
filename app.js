@@ -12,14 +12,19 @@ const gameSounds = {
   correct: new Audio("./correct.mp3"),
   wrong: new Audio("./wrong.mp3"),
   background: new Audio("./background.mp3"),
-  victory: new Audio("./victory.mp3")
+  victory: new Audio("./sounds/victory.mp3"),
+
+  timerStart: new Audio("./timer-start.mp3"),
+  timerFinal: new Audio("./timer-final.wav"),
+  timerZero: new Audio("./timer-zero.mp3")
 };
 
 gameSounds.background.loop = true;
-gameSounds.background.volume = 0.25;
+gameSounds.background.volume = 1.0;
 gameSounds.correct.volume = 0.8;
-gameSounds.wrong.volume = 0.8;
-gameSounds.victory.volume = 0.9;
+gameSounds.wrong.volume = 1.0;
+gameSounds.victory.volume = 0.9;a
+gameSounds.timerFinal.volume = 1.0;
 
 let backgroundStarted = false;
 let victoryPlayedForRoom = "";
@@ -32,6 +37,7 @@ function playGameSound(name) {
   const sound = gameSounds[name];
   if (!sound) return;
 
+  sound.pause();
   sound.currentTime = 0;
 
   sound.play().catch(error => {
@@ -84,7 +90,7 @@ const PRIZE_STEP = 100;
 const MAX_PLAYERS = 50;
 const QUESTION_SECONDS = 10;
 const BONUS_TITLE_SECONDS = 5;
-const BOARD_SECONDS = 1000;
+const BOARD_SECONDS = 2000;
 
 let app, auth, db, uid, playerName = "", roomCode = "", isHost = false, roomData = null;
 let unsubRoom = null, unsubPlayers = null, unsubAnswers = null;
@@ -520,14 +526,47 @@ function renderQuestion(index, startedAt) {
 
 function startClock(startedAt, index) {
   stopLocalTimers();
+  gameSounds.background.pause();
   localDeadline = startedAt + QUESTION_SECONDS * 1000;
+
+  let startPlayed = false;
+  let finalPlayed = false;
+  let zeroPlayed = false;
 
   const tick = () => {
     if (index !== currentQuestion) return;
 
-    const remain = Math.max(0, Math.ceil((localDeadline - Date.now()) / 1000));
+    const remain = Math.max(
+      0,
+      Math.ceil((localDeadline - Date.now()) / 1000)
+    );
+console.log("COUNTDOWN:", remain);
     $("timerCircle").textContent = remain;
     $("timerCircle").classList.toggle("urgent", remain <= 1);
+
+    // SOUND 1: 10–6 seconds
+    if (remain <= 10 && remain >= 6 && !startPlayed) {
+      startPlayed = true;
+      playGameSound("timerStart");
+    }
+
+    // SOUND 2: 3–1 seconds
+ if (remain <= 3 && remain >= 1 && !finalPlayed) {
+  finalPlayed = true;
+
+  gameSounds.timerStart.pause();
+  gameSounds.timerStart.currentTime = 0;
+
+  console.log("TIMER FINAL TRIGGERED");
+playGameSound("timerFinal");
+}
+
+    // SOUND 3: ZERO
+if (remain === 0 && !zeroPlayed) {
+  zeroPlayed = true;
+  playGameSound("timerZero");
+  console.log("TIMER ZERO PLAYED");
+}
 
     if (Date.now() >= localDeadline) {
       clearInterval(clockInterval);
