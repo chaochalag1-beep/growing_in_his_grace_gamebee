@@ -12,7 +12,7 @@ const gameSounds = {
   correct: new Audio("./correct.mp3"),
   wrong: new Audio("./wrong.mp3"),
   background: new Audio("./background.mp3"),
-  victory: new Audio("./sounds/victory.mp3"),
+  victory: new Audio("./victory.mp3"),
 
   timerStart: new Audio("./timer-start.mp3"),
   timerFinal: new Audio("./timer-final.wav"),
@@ -23,7 +23,7 @@ gameSounds.background.loop = true;
 gameSounds.background.volume = 1.0;
 gameSounds.correct.volume = 0.8;
 gameSounds.wrong.volume = 1.0;
-gameSounds.victory.volume = 0.9;a
+gameSounds.victory.volume = 0.9;
 gameSounds.timerFinal.volume = 1.0;
 
 let backgroundStarted = false;
