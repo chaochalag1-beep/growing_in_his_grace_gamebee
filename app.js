@@ -9,10 +9,10 @@ const $ = id => document.getElementById(id);
 
 // SOUNDS
 const gameSounds = {
-  correct: new Audio("./correct.mp3"),
-  wrong: new Audio("./wrong.mp3"),
-  background: new Audio("./background.mp3"),
-  victory: new Audio("./victory.mp3"),
+  correct: new Audio("./sounds/correct.mp3"),
+  wrong: new Audio("./sounds/wrong.mp3"),
+  background: new Audio("./sounds/background.mp3"),
+  victory: new Audio("./sounds/victory.mp3"),
 
   timerStart: new Audio("./timer-start.mp3"),
   timerFinal: new Audio("./timer-final.wav"),
@@ -39,10 +39,15 @@ function playGameSound(name) {
 
   sound.pause();
   sound.currentTime = 0;
+  sound.volume = 1.0;
 
-  sound.play().catch(error => {
-    console.log("Sound error:", name, error);
-  });
+  const playPromise = sound.play();
+
+  if (playPromise !== undefined) {
+    playPromise.catch(error => {
+      console.log("Sound error:", name, error.name, error.message);
+    });
+  }
 }
 
 async function startBackgroundMusic() {
@@ -57,32 +62,62 @@ async function startBackgroundMusic() {
     console.log("Background music blocked:", error);
   }
 }
+function unlockGameAudio() {
+  Object.entries(gameSounds).forEach(([name, sound]) => {
+    if (name === "background") return;
 
+    const wasMuted = sound.muted;
+    sound.muted = true;
+
+    sound.play().then(() => {
+      sound.pause();
+      sound.currentTime = 0;
+      sound.muted = wasMuted;
+    }).catch(() => {
+      sound.muted = wasMuted;
+    });
+  });
+
+  startBackgroundMusic();
+}
 // Start music on the player's first touch or click
 document.addEventListener(
   "pointerdown",
-  startBackgroundMusic,
+  unlockGameAudio,
   { once: true }
 );
 
 
 
+
 const QUESTIONS = [
- {q:"Ayon sa Lucas 2:52, paano lumago si Jesus?",a:["Sa kayamanan lamang","Sa karunungan, pangangatawan, at biyaya ng Diyos at ng tao","Sa kapangyarihan lamang"],c:1},
+ {q:"Ano ang THREE WORDS na dapat nating tandaan?",a:["Pray, Read, Serve","Approach, Grow, Lead","Trust, Humble, Obey"],c:1},
+
  {q:"Ano ang ibig sabihin ng “Trust God”?",a:["Magtiwala sa Diyos","Magtiwala sa sarili lamang","Matakot sa Diyos"],c:0},
+
  {q:"Bakit mahalagang magtiwala sa Diyos?",a:["Upang maging sikat","Upang makuha ang lahat ng gusto natin","Dahil ang Diyos ang ating gabay at kalakasan"],c:2},
+
  {q:"Paano tayo lalago sa pananampalataya?",a:["Sa pag-iwas sa Bibliya","Sa pagbabasa ng Bibliya, pananalangin, at pagsunod sa Diyos","Sa hindi pakikinig sa Diyos"],c:1},
+
  {q:"Ano ang ibig sabihin ng “Grow in God”?",a:["Lumago sa Diyos","Lumago sa kayamanan","Lumago sa katanyagan"],c:0},
+
  {q:"Ayon sa Marcos 10:14, ano ang sinabi ni Jesus tungkol sa mga bata?",a:["Huwag silang lumapit sa Kanya","Hayaan silang lumapit sa Kanya","Pauwiin silang lahat"],c:1},
+
  {q:"Bakit mahalagang lumapit tayo kay Jesus?",a:["Upang matuto sa Kanyang mga aral","Upang maging mayaman","Upang maging sikat"],c:0},
+
  {q:"Ano ang ibig sabihin ng “Be Humble”?",a:["Magmayabang","Magpakumbaba","Magmataas sa kapwa"],c:1},
+
  {q:"Paano natin maipapakita ang pagpapakumbaba?",a:["Sa pagmamataas","Sa pagsisi sa iba","Sa pakikinig, paggalang, at paghingi ng tawad"],c:2},
+
  {q:"Ano ang hindi halimbawa ng “Paglago tulad ng Panginoong JESUS”?",a:["Lack of wisdom, at Physical Decline","Spiritual Growth, at Social growth","Growth in wisdom, at Physical growth"],c:0},
 
-{q:"2026 THEME: Para kay Cristo, Ipangaral ang ______________, Mangaral upang lumago, Maglingkod nang may Puso, Mamuhay ng wasto.",a:["Ebanghelyo","Salita ng Diyos","Mabuting Balita"],c:0,bonus:50000},
-{q:"ANNIVERSARY THEME: Tatlong ____________ ng biyaya, Patuloy na lalago, Patuloy na hahayo.",a:["Taon","Dekada","Siglo"],c:1,bonus:50000},
-{q:"Sa anong week ng November 2026 ang Grand Anniversary ng Light of the World–Purok 5?",a:["2nd Sunday","3rd Sunday","4th Sunday"],c:2,bonus:100000}
+ {q:"2026 THEME: Para kay Cristo, Ipangaral ang ______________, Mangaral upang lumago, Maglingkod nang may Puso, Mamuhay ng wasto.",a:["Ebanghelyo","Salita ng Diyos","Mabuting Balita"],c:0,bonus:50000},
+
+ {q:"ANNIVERSARY THEME: Tatlong ____________ ng biyaya, Patuloy na lalago, Patuloy na hahayo.",a:["Taon","Dekada","Siglo"],c:1,bonus:50000},
+
+ {q:"Sa anong week ng November 2026 ang Grand Anniversary ng Light of the World–Purok 5?",a:["2nd Sunday","3rd Sunday","4th Sunday"],c:2,bonus:100000}
 ];
+
 
 
 const BASE_PRIZE = 1000000;
